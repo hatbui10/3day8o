@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dịch STT và N - Có Undo</title>
+    <title>Dịch Số Tùy Chỉnh Hàng - Dark Mode</title>
     <style>
         :root {
             --bg: #0f172a;
@@ -24,23 +24,27 @@
             justify-content: center;
             align-items: flex-start;
             min-height: 100vh;
-            margin: 30px;
+            margin: 0;
+            padding: 20px;
         }
 
         .container {
             background: var(--card);
-            padding: 30px;
+            padding: 25px;
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 20px;
+            max-width: 95vw;
         }
 
         .header-controls {
             display: flex;
-            gap: 20px;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
             align-items: flex-end;
         }
 
@@ -50,7 +54,7 @@
             width: 55px;
             height: 55px;
             text-align: center;
-            font-size: 22px;
+            font-size: 20px;
             font-weight: bold;
             border-radius: 12px;
             border: 2px solid var(--border);
@@ -59,13 +63,14 @@
             outline: none;
         }
 
-        #startSTT { width: 85px; border-color: #fbbf24; color: #fbbf24; }
+        #colsInput { width: 70px; border-color: #a855f7; color: #a855f7; } /* Màu tím cho cấu hình cột */
+        #startSTT { width: 80px; border-color: #fbbf24; color: #fbbf24; }
         #inputN { border-color: var(--accent); }
         #inputM { border-color: var(--danger); color: var(--danger); }
 
         .btn-undo {
             height: 55px;
-            padding: 0 20px;
+            padding: 0 15px;
             background: var(--undo);
             color: #111827;
             border: none;
@@ -73,19 +78,16 @@
             font-weight: bold;
             cursor: pointer;
             transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
 
-        .btn-undo:hover { background: #cbd5e1; transform: translateY(-2px); }
-        .btn-undo:active { transform: translateY(0); }
+        .btn-undo:hover { background: #cbd5e1; }
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(8, 1fr);
             gap: 10px;
             padding: 10px;
+            background: rgba(0,0,0,0.1);
+            border-radius: 12px;
         }
 
         .cell-container {
@@ -103,19 +105,23 @@
         }
 
         .cell-input {
-            width: 50px;
-            height: 50px;
-            font-size: 20px;
+            width: 48px;
+            height: 48px;
+            font-size: 18px;
             background: #0f172a;
         }
 
-        label { color: #94a3b8; font-size: 12px; font-weight: bold; text-transform: uppercase; }
+        label { color: #94a3b8; font-size: 11px; font-weight: bold; text-transform: uppercase; text-align: center;}
     </style>
 </head>
 <body>
 
     <div class="container">
         <div class="header-controls">
+            <div class="input-group">
+                <label>Số ô/Hàng</label>
+                <input type="number" id="colsInput" value="8" min="1" max="15">
+            </div>
             <div class="input-group">
                 <label>STT Bắt đầu</label>
                 <input type="text" id="startSTT" value="1" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
@@ -138,40 +144,58 @@
     <script>
         const inputN = document.getElementById('inputN');
         const startSTTInput = document.getElementById('startSTT');
+        const colsInput = document.getElementById('colsInput');
         const inputM = document.getElementById('inputM');
         const undoBtn = document.getElementById('undoBtn');
         const grid = document.getElementById('mainGrid');
-        const total = 24;
 
-        // Mảng chính
-        let data = Array(total).fill(null).map(() => ({ val: '', stt: '' }));
-        
-        // Ngăn xếp để lưu lịch sử (History Stack)
+        let rows = 3;
+        let cols = 8;
+        let total = rows * cols;
+        let data = [];
         let history = [];
 
-        // Tạo giao diện
-        for (let i = 0; i < total; i++) {
-            const container = document.createElement('div');
-            container.className = 'cell-container';
-            const sttLabel = document.createElement('div');
-            sttLabel.className = 'stt-label';
-            sttLabel.id = `stt-${i}`;
-            const el = document.createElement('input');
-            el.type = 'text';
-            el.readOnly = true;
-            el.className = 'cell-input';
-            el.id = `cell-${i}`;
-            container.appendChild(sttLabel);
-            container.appendChild(el);
-            grid.appendChild(container);
+        // Khởi tạo lưới lần đầu
+        initGrid();
+
+        // Lắng nghe thay đổi số cột
+        colsInput.addEventListener('change', () => {
+            let val = parseInt(colsInput.value);
+            if(val > 0 && val <= 15) {
+                cols = val;
+                initGrid();
+            }
+        });
+
+        function initGrid() {
+            total = rows * cols;
+            grid.innerHTML = '';
+            grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            data = Array(total).fill(null).map(() => ({ val: '', stt: '' }));
+            history = [];
+            inputM.value = '';
+
+            for (let i = 0; i < total; i++) {
+                const container = document.createElement('div');
+                container.className = 'cell-container';
+                const sttLabel = document.createElement('div');
+                sttLabel.className = 'stt-label';
+                sttLabel.id = `stt-${i}`;
+                const el = document.createElement('input');
+                el.type = 'text';
+                el.readOnly = true;
+                el.className = 'cell-input';
+                el.id = `cell-${i}`;
+                container.appendChild(sttLabel);
+                container.appendChild(el);
+                grid.appendChild(container);
+            }
         }
 
-        // Logic Auto Focus sang ô N sau 2s
+        // Tự động focus sang N sau 2s khi nhập STT
         startSTTInput.addEventListener('input', () => {
             if (window.focusTimer) clearTimeout(window.focusTimer);
-            window.focusTimer = setTimeout(() => {
-                inputN.focus();
-            }, 2000);
+            window.focusTimer = setTimeout(() => { inputN.focus(); }, 2000);
         });
 
         // Nhập N
@@ -180,15 +204,14 @@
             e.target.value = val;
 
             if (val !== "") {
-                // LƯU LỊCH SỬ TRƯỚC KHI THAY ĐỔI
                 saveHistory();
 
                 let currentSTT = parseInt(startSTTInput.value) || 1;
-
-                // Cập nhật ô M
+                
+                // Ô M lấy giá trị cũ nhất (data cuối mảng)
                 inputM.value = data[total - 1].val;
 
-                // Dịch chuyển
+                // Dịch chuyển dữ liệu
                 for (let i = total - 1; i > 0; i--) {
                     data[i] = { ...data[i - 1] };
                 }
@@ -201,50 +224,45 @@
             }
         });
 
-        // Logic UNDO
+        // Undo
         undoBtn.addEventListener('click', () => {
             if (history.length > 0) {
-                // Lấy trạng thái cuối cùng trong lịch sử
                 const lastState = history.pop();
-                
-                // Khôi phục dữ liệu
                 data = lastState.data;
                 startSTTInput.value = lastState.startSTT;
                 inputM.value = lastState.inputM;
-
                 renderReverse();
                 inputN.focus();
-            } else {
-                alert("Không còn gì để Undo!");
             }
         });
 
         function saveHistory() {
-            // Lưu bản sao sâu (deep copy) của mảng data và các giá trị liên quan
             history.push({
                 data: JSON.parse(JSON.stringify(data)),
                 startSTT: startSTTInput.value,
                 inputM: inputM.value
             });
-            // Giới hạn lịch sử 50 bước để tránh tốn bộ nhớ
             if (history.length > 50) history.shift();
         }
 
         function renderReverse() {
-            for (let row = 0; row < 3; row++) {
-                for (let col = 0; col < 8; col++) {
-                    const gridIdx = row * 8 + col;
-                    const dataIdx = (row * 8) + (7 - col);
-                    document.getElementById(`cell-${gridIdx}`).value = data[dataIdx].val;
-                    document.getElementById(`stt-${gridIdx}`).innerText = data[dataIdx].stt || '';
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const gridIdx = r * cols + c;
+                    // Ô bên phải nhất của mỗi hàng nhận data mới hơn (Index 0, cols, 2*cols...)
+                    const dataIdx = (r * cols) + (cols - 1 - c);
+                    
+                    if(document.getElementById(`cell-${gridIdx}`)) {
+                        document.getElementById(`cell-${gridIdx}`).value = data[dataIdx].val;
+                        document.getElementById(`stt-${gridIdx}`).innerText = data[dataIdx].stt || '';
+                    }
                 }
             }
         }
 
         window.onload = () => startSTTInput.focus();
-
         document.addEventListener('click', (e) => {
-            if (e.target !== startSTTInput && e.target !== undoBtn) {
+            if (!['startSTT', 'colsInput', 'undoBtn'].includes(e.target.id)) {
                 inputN.focus();
             }
         });
