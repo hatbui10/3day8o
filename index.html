@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dịch Số Tùy Chỉnh Hàng - Dark Mode</title>
+    <title>catday8o</title>
     <style>
         :root {
             --bg: #0f172a;
@@ -19,112 +19,154 @@
         body {
             background-color: var(--bg);
             color: var(--text);
-            font-family: sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             display: flex;
             justify-content: center;
             align-items: flex-start;
             min-height: 100vh;
             margin: 0;
-            padding: 20px;
+            padding: 10px;
         }
 
         .container {
             background: var(--card);
-            padding: 25px;
+            padding: 15px;
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 20px;
-            max-width: 95vw;
+            gap: 15px;
+            width: 100%;
+            max-width: 500px; /* Giới hạn độ rộng tối đa trên tablet/pc */
+        }
+
+        /* Ô M đưa lên đầu */
+        .result-section {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            padding-bottom: 5px;
+            border-bottom: 1px solid var(--border);
         }
 
         .header-controls {
             display: flex;
-            gap: 15px;
+            gap: 10px;
             flex-wrap: wrap;
             justify-content: center;
             align-items: flex-end;
+            width: 100%;
         }
 
-        .input-group { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .input-group { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            gap: 5px; 
+        }
 
         input {
-            width: 55px;
-            height: 55px;
+            width: 50px;
+            height: 50px;
             text-align: center;
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
             border-radius: 12px;
             border: 2px solid var(--border);
             background: #111827;
             color: var(--text);
             outline: none;
+            -webkit-appearance: none; /* Tránh bo góc mặc định trên iOS */
         }
 
-        #colsInput { width: 70px; border-color: #a855f7; color: #a855f7; } /* Màu tím cho cấu hình cột */
-        #startSTT { width: 80px; border-color: #fbbf24; color: #fbbf24; }
-        #inputN { border-color: var(--accent); }
-        #inputM { border-color: var(--danger); color: var(--danger); }
+        #colsInput { width: 60px; border-color: #a855f7; color: #a855f7; }
+        #startSTT { width: 75px; border-color: #fbbf24; color: #fbbf24; }
+        #inputN { border-color: var(--accent); background: #1e293b; }
+        #inputM { border-color: var(--danger); color: var(--danger); width: 65px; height: 65px; font-size: 24px; }
 
         .btn-undo {
-            height: 55px;
-            padding: 0 15px;
+            height: 50px;
+            padding: 0 12px;
             background: var(--undo);
             color: #111827;
             border: none;
             border-radius: 12px;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.2s;
+            text-transform: uppercase;
+            font-size: 12px;
         }
 
-        .btn-undo:hover { background: #cbd5e1; }
+        /* Khu vực lưới có thanh cuộn ngang cho mobile */
+        .grid-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            padding: 10px 0;
+            display: flex;
+            justify-content: flex-start; /* Để cuộn từ trái sang */
+            -webkit-overflow-scrolling: touch; /* Cuộn mượt trên iOS */
+        }
 
         .grid {
             display: grid;
-            gap: 10px;
-            padding: 10px;
-            background: rgba(0,0,0,0.1);
-            border-radius: 12px;
+            gap: 8px;
+            margin: 0 auto; /* Căn giữa nếu lưới nhỏ hơn màn hình */
         }
 
         .cell-container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
+            gap: 2px;
         }
 
         .stt-label {
-            font-size: 11px;
+            font-size: 10px;
             color: var(--stt-color);
             font-weight: bold;
-            height: 15px;
+            height: 14px;
         }
 
         .cell-input {
-            width: 48px;
-            height: 48px;
-            font-size: 18px;
+            width: 42px;
+            height: 42px;
+            font-size: 16px;
             background: #0f172a;
+            border-radius: 8px;
         }
 
-        label { color: #94a3b8; font-size: 11px; font-weight: bold; text-transform: uppercase; text-align: center;}
+        label { 
+            color: #94a3b8; 
+            font-size: 10px; 
+            font-weight: bold; 
+            text-transform: uppercase; 
+            text-align: center;
+        }
+
+        /* Thanh cuộn tinh tế hơn */
+        .grid-wrapper::-webkit-scrollbar { height: 4px; }
+        .grid-wrapper::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
     </style>
 </head>
 <body>
 
     <div class="container">
+        <div class="result-section">
+            <div class="input-group">
+                <label>KẾT QUẢ M</label>
+                <input type="text" id="inputM" readonly>
+            </div>
+        </div>
+
         <div class="header-controls">
             <div class="input-group">
-                <label>Số ô/Hàng</label>
+                <label>Ô/Hàng</label>
                 <input type="number" id="colsInput" value="8" min="1" max="15">
             </div>
             <div class="input-group">
-                <label>STT Bắt đầu</label>
-                <input type="text" id="startSTT" value="1" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                <label>STT Đầu</label>
+                <input type="text" id="startSTT" value="1" inputmode="numeric">
             </div>
             <div class="input-group">
                 <label>NHẬP N</label>
@@ -133,11 +175,8 @@
             <button class="btn-undo" id="undoBtn">UNDO ↩</button>
         </div>
 
-        <div class="grid" id="mainGrid"></div>
-
-        <div class="input-group">
-            <label>KẾT QUẢ M</label>
-            <input type="text" id="inputM" readonly>
+        <div class="grid-wrapper">
+            <div class="grid" id="mainGrid"></div>
         </div>
     </div>
 
@@ -155,10 +194,8 @@
         let data = [];
         let history = [];
 
-        // Khởi tạo lưới lần đầu
         initGrid();
 
-        // Lắng nghe thay đổi số cột
         colsInput.addEventListener('change', () => {
             let val = parseInt(colsInput.value);
             if(val > 0 && val <= 15) {
@@ -192,26 +229,22 @@
             }
         }
 
-        // Tự động focus sang N sau 2s khi nhập STT
-        startSTTInput.addEventListener('input', () => {
+        startSTTInput.addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, '');
             if (window.focusTimer) clearTimeout(window.focusTimer);
             window.focusTimer = setTimeout(() => { inputN.focus(); }, 2000);
         });
 
-        // Nhập N
         inputN.addEventListener('input', (e) => {
             let val = e.target.value.replace(/[^0-9]/g, '');
             e.target.value = val;
 
             if (val !== "") {
                 saveHistory();
-
                 let currentSTT = parseInt(startSTTInput.value) || 1;
                 
-                // Ô M lấy giá trị cũ nhất (data cuối mảng)
                 inputM.value = data[total - 1].val;
 
-                // Dịch chuyển dữ liệu
                 for (let i = total - 1; i > 0; i--) {
                     data[i] = { ...data[i - 1] };
                 }
@@ -224,7 +257,6 @@
             }
         });
 
-        // Undo
         undoBtn.addEventListener('click', () => {
             if (history.length > 0) {
                 const lastState = history.pop();
@@ -249,20 +281,23 @@
             for (let r = 0; r < rows; r++) {
                 for (let c = 0; c < cols; c++) {
                     const gridIdx = r * cols + c;
-                    // Ô bên phải nhất của mỗi hàng nhận data mới hơn (Index 0, cols, 2*cols...)
                     const dataIdx = (r * cols) + (cols - 1 - c);
-                    
-                    if(document.getElementById(`cell-${gridIdx}`)) {
-                        document.getElementById(`cell-${gridIdx}`).value = data[dataIdx].val;
-                        document.getElementById(`stt-${gridIdx}`).innerText = data[dataIdx].stt || '';
+                    const cell = document.getElementById(`cell-${gridIdx}`);
+                    const stt = document.getElementById(`stt-${gridIdx}`);
+                    if(cell) {
+                        cell.value = data[dataIdx].val;
+                        stt.innerText = data[dataIdx].stt || '';
                     }
                 }
             }
         }
 
         window.onload = () => startSTTInput.focus();
+        
+        // Luôn giữ focus vào ô nhập N khi bấm vào vùng trống
         document.addEventListener('click', (e) => {
-            if (!['startSTT', 'colsInput', 'undoBtn'].includes(e.target.id)) {
+            const ignoreList = ['startSTT', 'colsInput', 'undoBtn'];
+            if (!ignoreList.includes(e.target.id) && e.target.tagName !== 'INPUT') {
                 inputN.focus();
             }
         });
